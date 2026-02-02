@@ -1,46 +1,41 @@
 /**
  * API Client for QuranIQ Backend
- * Handles all HTTP requests to Vercel backend
- * 
- * Mobile-Ready: Works in WebView and Progressive Web App contexts
+ * Connects to Firebase Auth + Vercel Backend
  */
 
-const API_BASE = 'https://quraniq.app/api';
+import { auth } from './firebase-config.js';
+
+const API_BASE = 'https://api.quraniq.app/api';
 
 class APIClient {
   constructor() {
-    this.token = this.getStoredToken();
     this.isOnline = navigator.onLine;
     
-    // Listen for online/offline events (important for mobile)
     window.addEventListener('online', () => this.isOnline = true);
     window.addEventListener('offline', () => this.isOnline = false);
   }
 
-  getStoredToken() {
+  /**
+   * Get Firebase ID token for authenticated requests
+   */
+  async getToken() {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Not authenticated');
+    }
+    
     try {
-      return localStorage.getItem('quran_iq_token');
-    } catch (e) {
-      console.warn('localStorage not available:', e);
-      return null;
+      return await user.getIdToken();
+    } catch (error) {
+      console.error('Failed to get token:', error);
+      throw new Error('Authentication failed');
     }
   }
 
-  setToken(token) {
-    this.token = token;
-    try {
-      if (token) {
-        localStorage.setItem('quran_iq_token', token);
-      } else {
-        localStorage.removeItem('quran_iq_token');
-      }
-    } catch (e) {
-      console.warn('Failed to store token:', e);
-    }
-  }
-
+  /**
+   * Make authenticated API request
+   */
   async request(endpoint, options = {}) {
-    // Offline check (critical for mobile apps)
     if (!this.isOnline) {
       throw new Error('No internet connection. Please check your network.');
     }
@@ -50,15 +45,20 @@ class APIClient {
       ...options.headers
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    // Add Firebase token if user is authenticated
+    if (auth.currentUser) {
+      try {
+        const token = await this.getToken();
+        headers['Authorization'] = `Bearer ${token}`;
+      } catch (error) {
+        console.warn('Failed to attach auth token:', error);
+      }
     }
 
     const config = {
       ...options,
       headers,
-      // Mobile timeout: 15 seconds (slower mobile networks)
-      signal: AbortSignal.timeout(15000)
+      signal: AbortSignal.timeout(30000) // 30 second timeout
     };
 
     if (options.body) {
@@ -66,12 +66,7 @@ class APIClient {
     }
 
     try {
-      // Use Trickle Proxy to avoid CORS errors and ensure connectivity
-      const targetUrl = `${API_BASE}${endpoint}`;
-      // Note: We route through the proxy to handle cross-origin restrictions in the web view
-      const proxyUrl = `https://proxy-api.trickle-app.host/?url=${encodeURIComponent(targetUrl)}`;
-      
-      const response = await fetch(proxyUrl, config);
+      const response = await fetch(`${API_BASE}${endpoint}`, config);
       const data = await response.json();
 
       if (!response.ok) {
@@ -80,7 +75,6 @@ class APIClient {
 
       return data;
     } catch (error) {
-      // Network error handling for mobile
       if (error.name === 'AbortError') {
         throw new Error('Request timeout. Please check your connection.');
       }
@@ -89,51 +83,26 @@ class APIClient {
   }
 
   // ============================================
-  // AUTH ENDPOINTS
+  // USER SYNC
   // ============================================
 
-  async login(email, password) {
-    const data = await this.request('/auth/login', {
-      method: 'POST',
-      body: { email, password }
-    });
-    
-    this.setToken(data.token);
-    return data.user;
-  }
-
-  async register(name, email, password) {
-    const data = await this.request('/auth/register', {
-      method: 'POST',
-      body: { name, email, password }
-    });
-    
-    this.setToken(data.token);
-    return data.user;
-  }
-
-  async verifySession() {
-    if (!this.token) return null;
-
-    try {
-      const data = await this.request('/auth/verify', {
-        method: 'POST',
-        body: { token: this.token }
-      });
-      return data.user;
-    } catch (error) {
-      console.warn('Session verification failed:', error);
-      this.setToken(null);
-      return null;
+  async syncUser() {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('No user logged in');
     }
-  }
 
-  logout() {
-    this.setToken(null);
+    return this.request('/user/sync', {
+      method: 'POST',
+      body: {
+        name: user.displayName || user.email?.split('@')[0],
+        email: user.email
+      }
+    });
   }
 
   // ============================================
-  // CHAT ENDPOINTS
+  // CHAT
   // ============================================
 
   async askQuestion(question, chatHistory = []) {
@@ -144,48 +113,41 @@ class APIClient {
   }
 
   // ============================================
-  // CHAPTERS ENDPOINTS
+  // CHAPTERS
   // ============================================
 
-  async createChapter(userId, title, content) {
+  async createChapter(title, content) {
     return this.request('/chapters/create', {
       method: 'POST',
-      body: { userId, title, content }
+      body: { title, content }
     });
   }
 
-  async listChapters(userId) {
-    return this.request(`/chapters/list?userId=${userId}`);
-  }
-
-  async deleteChapter(chapterId) {
-    return this.request('/chapters/delete', {
-      method: 'DELETE',
-      body: { chapterId }
-    });
+  async listChapters() {
+    return this.request('/chapters/list');
   }
 
   // ============================================
-  // JOURNEYS ENDPOINTS
+  // JOURNEYS
   // ============================================
 
-  async updateJourneyProgress(userId, journeyId, stepId) {
+  async updateJourneyProgress(journeyId, stepId) {
     return this.request('/journeys/progress', {
       method: 'POST',
-      body: { userId, journeyId, stepId }
+      body: { journeyId, stepId }
     });
   }
 
-  async getJourneyProgress(userId) {
-    return this.request(`/journeys/progress?userId=${userId}`);
+  async getJourneyProgress() {
+    return this.request('/journeys/progress');
   }
 
   // ============================================
-  // UTILITY METHODS
+  // UTILITIES
   // ============================================
 
   isAuthenticated() {
-    return !!this.token;
+    return !!auth.currentUser;
   }
 
   getConnectionStatus() {
@@ -193,10 +155,11 @@ class APIClient {
   }
 }
 
-// Export singleton instance
 const apiClient = new APIClient();
 
-// Make available globally for debugging in mobile WebView
+// Make available globally for debugging
 if (typeof window !== 'undefined') {
   window.apiClient = apiClient;
 }
+
+export default apiClient;
