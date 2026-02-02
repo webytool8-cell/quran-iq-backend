@@ -1,58 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <title>QuranIQ</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="https://app.trickle.so/storage/public/images/usr_19c684eaa8000001/2a234d6e-1c33-459a-b89f-c1a196d1be38.png">
-
-  <!-- Tailwind & Lucide CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
-
-  <!-- React + Babel -->
-  <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
-  <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
-  <!-- Inject Vercel environment variables at runtime -->
-  <script>
-    window.FIREBASE_CONFIG = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-  </script>
-
-  <!-- Your Firebase init -->
-  <script type="text/babel" src="utils/firebase.js"></script>
-
-  <!-- Your app code -->
-  <script type="text/babel" src="utils/config.js"></script>
-  <script type="text/babel" src="utils/api-client.js"></script>
-  <script type="text/babel" src="components/Logo.js"></script>
-  <script type="text/babel" src="app.js"></script>
-</head>
-<body>
-  <div id="root"></div>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('serviceWorker.js')
-          .then(registration => console.log('ServiceWorker registered:', registration.scope))
-          .catch(err => console.log('ServiceWorker failed:', err));
-      });
-    }
-  </script>
-</body>
-</html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QuranIQ">
+    <meta name="theme-color" content="#0F5132">
+    
+    <link rel="manifest" href="/manifest.json">
+    
+    <title>QuranIQ - Intelligent Wisdom</title>
+    
+    <!-- React and Babel (existing) -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase SDK (NEW - ADD THIS) -->
+    <script type="module">
+      // Firebase will be imported in firebase-config.js
+    </script>
+    
+    <!-- Rest of your existing head content... -->
