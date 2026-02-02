@@ -1,42 +1,35 @@
 /**
- * Firebase Configuration for QuranIQ
- * Replace with your actual Firebase project credentials
+ * Firebase Auth – UMD / Browser Safe
+ * No modules, no bundler, works on Vercel + Trickle
  */
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-  getAuth, 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+/* global firebase */
 
-// TODO: Replace with your Firebase project config
-// Get from: Firebase Console → Project Settings → General → Your apps → Web app
-const firebaseConfig = {
-  apiKey: "AIzaSyCJ-y09Nc7Zt3OCeanRJkn_3iA6SddjSb8",
-  authDomain: "quraniq-deb47.firebaseapp.com",
-  projectId: "quraniq-deb47",
-  storageBucket: "quraniq-deb47.firebasestorage.app",
-  messagingSenderId: "1062085300745",
-  appId: "1:1062085300745:web:2a45920402f22b3aff9ed8"
-};
+(function () {
+  // 🔐 Firebase config (from Vercel env → injected at build time)
+  const firebaseConfig = {
+    apiKey: window.__ENV?.FIREBASE_API_KEY,
+    authDomain: window.__ENV?.FIREBASE_AUTH_DOMAIN,
+    projectId: window.__ENV?.FIREBASE_PROJECT_ID,
+    storageBucket: window.__ENV?.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: window.__ENV?.FIREBASE_MESSAGING_SENDER_ID,
+    appId: window.__ENV?.FIREBASE_APP_ID,
+  };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+  if (!firebaseConfig.apiKey) {
+    console.error("🔥 Firebase config missing. Check Vercel env vars.");
+    return;
+  }
 
-// Export for use in other files
-export { 
-  auth, 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  googleProvider,
-  signInWithPopup
-};
+  // Prevent re-init
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  const auth = firebase.auth();
+
+  // Expose globally
+  window.firebaseAuth = auth;
+
+  console.log("✅ Firebase Auth initialized");
+})();
