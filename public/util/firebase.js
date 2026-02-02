@@ -1,12 +1,9 @@
-// utils/firebase.js
+// Initialize Firebase using the config from index.html
+firebase.initializeApp(window.FIREBASE_CONFIG);
 
-firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
-  authDomain: "quraniq.firebaseapp.com",
-  projectId: "quraniq",
-});
-
+// Auth object available globally
 const auth = firebase.auth();
-
-// make it accessible everywhere
 window.firebaseAuth = auth;
+
+// Optional: simple helper to check if Firebase loaded
+console.log("Firebase initialized. Auth available:", !!window.firebaseAuth);
