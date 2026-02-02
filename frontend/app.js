@@ -13,6 +13,20 @@
 
 const STORAGE_KEY = 'living_quran_user';
 
+window.testLogin = async () => {
+  try {
+    const result = await window.firebaseAuth.signInWithEmailAndPassword(
+      "test@example.com",
+      "password123"
+    );
+
+    console.log("Logged in user:", result.user);
+  } catch (err) {
+    console.error("Login error:", err.message);
+  }
+};
+
+
 async function loginUser(email, password) {
     try {
         const user = await apiClient.login(email, password);
