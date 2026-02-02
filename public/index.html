@@ -1,26 +1,77 @@
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="QuranIQ">
-    <meta name="theme-color" content="#0F5132">
-    
-    <link rel="manifest" href="/manifest.json">
-    
-    <title>QuranIQ - Intelligent Wisdom</title>
-    
-    <!-- React and Babel (existing) -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Basic -->
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- PWA -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="QuranIQ" />
+    <meta name="theme-color" content="#0F5132" />
+
+    <link rel="manifest" href="/manifest.json" />
+
+    <title>QuranIQ – Intelligent Wisdom</title>
+
+    <!-- Tailwind (OK for now; we can optimize later) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- React (UMD) -->
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel (required because you're using JSX in-browser) -->
     <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Firebase SDK (NEW - ADD THIS) -->
-    <script type="module">
-      // Firebase will be imported in firebase-config.js
+  </head>
+
+  <body class="bg-gray-50 text-gray-900">
+    <!-- React Root -->
+    <div id="root"></div>
+
+    <!-- ========================= -->
+    <!-- APP SCRIPTS (ORDER MATTERS) -->
+    <!-- ========================= -->
+
+    <!-- Global config (env, constants) -->
+    <script type="text/babel" src="/utils/config.js"></script>
+
+    <!-- API client -->
+    <script type="text/babel" src="/utils/api-client.js"></script>
+
+    <!-- Firebase (AUTH ONLY – no modules) -->
+    <script type="text/babel" src="/utils/firebase.js"></script>
+
+    <!-- Main App -->
+    <script type="text/babel" src="/app.js"></script>
+
+    <!-- ========================= -->
+    <!-- SERVICE WORKER -->
+    <!-- ========================= -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((reg) => {
+              console.log("ServiceWorker registered:", reg.scope);
+            })
+            .catch((err) => {
+              console.warn("ServiceWorker registration failed:", err);
+            });
+        });
+      }
     </script>
-    
-    <!-- Rest of your existing head content... -->
+  </body>
+</html>
